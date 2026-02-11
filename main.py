@@ -4,6 +4,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import smtplib
+from email.message import EmailMessage
+import os
 
 
 class ContactMessage(BaseModel):
@@ -48,7 +51,27 @@ def contact():
 
 @app.post("/api/contact")
 def contact(message: ContactMessage):
-    print("New contact message:")
-    print(message)
+
+    email_user = os.getenv("EMAIL_USER")
+    email_pass = os.getenv("EMAIL_PASS")
+
+    msg = EmailMessage()
+    msg["Subject"] = f"New Portfolio Message from {message.name}"
+    msg["From"] = email_user
+    msg["To"] = email_user
+
+    msg.set_content (
+        f"""
+Name: {message.name}
+Email: {message.email}
+
+Message:
+    {message.message}
+"""
+    )
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        smtp.login(email_user, email_pass)
+        smtp.send_message(msg)
 
     return {"status": "success"}
