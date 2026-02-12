@@ -11,12 +11,6 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from fastapi import Request
 
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
-
-
-
-
 
 class ContactMessage(BaseModel):
     name: str = Field(min_length=2, max_length=100)
@@ -24,6 +18,9 @@ class ContactMessage(BaseModel):
     message: str = Field(min_length=10, max_length=2000)
 
 app = FastAPI()
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
 
 # allow React front end to talk to Python
 app.add_middleware(
