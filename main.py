@@ -3,16 +3,17 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 import smtplib
 from email.message import EmailMessage
 import os
 
 
+
 class ContactMessage(BaseModel):
-    name: str
-    email: str
-    message: str
+    name: str = Field(min_length=2, max_length=100)
+    email: EmailStr
+    message: str = Field(min_length=10, max_length=2000)
 
 app = FastAPI()
 
