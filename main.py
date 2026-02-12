@@ -7,6 +7,14 @@ from pydantic import BaseModel, EmailStr, Field
 import smtplib
 from email.message import EmailMessage
 import os
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from fastapi import Request
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+
+
 
 
 
@@ -51,7 +59,8 @@ def contact():
     }
 
 @app.post("/api/contact")
-def contact(message: ContactMessage):
+@limiter.limit("5/minute")
+def contact(request: Request, message: ContactMessage):
 
     try:
         email_user = os.getenv("EMAIL_USER")
