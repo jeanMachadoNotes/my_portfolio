@@ -53,26 +53,31 @@ def contact():
 @app.post("/api/contact")
 def contact(message: ContactMessage):
 
-    email_user = os.getenv("EMAIL_USER")
-    email_pass = os.getenv("EMAIL_PASS")
+    try:
+        email_user = os.getenv("EMAIL_USER")
+        email_pass = os.getenv("EMAIL_PASS")
 
-    msg = EmailMessage()
-    msg["Subject"] = f"New Portfolio Message from {message.name}"
-    msg["From"] = email_user
-    msg["To"] = email_user
+        msg = EmailMessage()
+        msg["Subject"] = f"New Portfolio Message from {message.name}"
+        msg["From"] = email_user
+        msg["To"] = email_user
 
-    msg.set_content (
-        f"""
-Name: {message.name}
-Email: {message.email}
+        msg.set_content (
+            f"""
+            Name: {message.name}
+            Email: {message.email}
 
-Message:
-    {message.message}
-"""
-    )
+            Message:
+                {message.message}
+            """
+                )
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-        smtp.login(email_user, email_pass)
-        smtp.send_message(msg)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(email_user, email_pass)
+            smtp.send_message(msg)
 
-    return {"status": "success"}
+        return {"status": "success"}
+    
+    except Exception:
+        return {"status":"error"}
+
