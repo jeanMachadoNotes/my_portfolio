@@ -7,9 +7,9 @@ from pydantic import BaseModel, EmailStr, Field
 import smtplib
 from email.message import EmailMessage
 import os
-from slowapi import Limiter
+from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
-from fastapi import Request
+from slowapi.errors import RateLimitExceeded
 
 
 class ContactMessage(BaseModel):
@@ -21,13 +21,14 @@ app = FastAPI()
 
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # allow React front end to talk to Python
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://jeanmachado.net", "https://www.jeanmachado.net"], #only this can call Python backend
     allow_credentials=True,
-    allow_methods=["POST"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -49,17 +50,15 @@ def services():
     }
 
 
-@app.get("/api/contact")
-def contact():
-    return {
-        "email": "jeanmachadotx@gmail.com"
-    }
-
 @app.post("/api/contact")
 @limiter.limit("5/minute")
 def contact(request: Request, message: ContactMessage):
 
     try:
+        # Honeypot check
+        if hasattr(message, "company") and message.company:
+            return {"status": "blocked"}
+
         email_user = os.getenv("EMAIL_USER")
         email_pass = os.getenv("EMAIL_PASS")
 
