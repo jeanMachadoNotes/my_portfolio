@@ -16,12 +16,12 @@ class ContactMessage(BaseModel):
 
 app = FastAPI()
 
-# allow React to talk to Python
+# allow React front end to talk to Python
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], #TEMP: allow all
+    allow_origins=["https://jeanmachado.net", "https://www.jeanmachado.net"], #only this can call Python backend
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["POST"],
     allow_headers=["*"],
 )
 
